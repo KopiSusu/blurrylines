@@ -1,7 +1,7 @@
 import PreviewGenForm from "@/components/shared/PreviewGenForm";
 import React from "react";
 
-function PreviewPage() {
+function Page() {
   return (
     <div>
       <PreviewGenForm />
@@ -9,4 +9,4 @@ function PreviewPage() {
   );
 }
 
-export default PreviewPage;
+export default Page;

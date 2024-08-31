@@ -1,7 +1,7 @@
 import PreviewGenForm from "@/components/shared/PreviewGenForm";
 import { getPreview } from "./actions";
 
-async function PreviewDetailPage({
+async function Page({
   params,
   searchParams,
 }: {
@@ -20,4 +20,4 @@ async function PreviewDetailPage({
   );
 }
 
-export default PreviewDetailPage;
+export default Page;
