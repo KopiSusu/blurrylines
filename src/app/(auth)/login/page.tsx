@@ -35,7 +35,7 @@ const authSchema = z
 
 type AuthFormData = z.infer<typeof authSchema>;
 
-export function AuthComponent() {
+export function AuthPage() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -178,4 +178,4 @@ export function AuthComponent() {
   );
 }
 
-export default AuthComponent;
+export default AuthPage;

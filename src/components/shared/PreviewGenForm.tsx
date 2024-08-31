@@ -80,8 +80,6 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
         } else if (result.task.status === "TASK_STATUS_FAILED") {
           setIstaskLoading(false);
           console.error("Image processing failed");
-        } else {
-          setTimeout(pollForResult, 3000);
         }
       } catch (error) {
         console.error("Error fetching task result:", error);
@@ -89,7 +87,13 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
       }
     };
 
-    pollForResult();
+    pollForResult(); // Initial call
+
+    const interval = setInterval(() => {
+      pollForResult();
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [preview?.task_id]);
 
   const isFormLoading = isLoading || isPending || isTaskLoading;
