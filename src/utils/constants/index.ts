@@ -1,4 +1,4 @@
-import { Camera,Image, Hexagon, Home, PaintBucket, RemoveFormatting, User, Wallet } from "lucide-react";
+import { Camera,Image, Hexagon, Home, PaintBucket, RemoveFormatting, User, Wallet, GalleryHorizontal, ImagePlus } from "lucide-react";
 import react from "react";
 
 export const protectedPaths = ["/private"];
@@ -11,9 +11,14 @@ export const navLinks = [
     icon: Home,
   },
   {
-    label: "Preview Generator",
+    label: "Previews",
+    route: "/previews",
+    icon: GalleryHorizontal
+  },
+  {
+    label: "Generate preview",
     route: "/preview",
-    icon: Image
+    icon: ImagePlus
   },
   {
     label: "Profile",
@@ -22,7 +27,7 @@ export const navLinks = [
   },
   {
     label: "subscription",
-    route: "/credits",
+    route: "/subscription",
     icon: Wallet
   },
 ];

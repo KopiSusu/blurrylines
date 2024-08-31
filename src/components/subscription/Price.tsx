@@ -4,6 +4,7 @@ import { cn } from "@/utils";
 import Checkout from "./Checkout";
 import { getProfile } from "@/app/(protected)/profile/actions";
 import { getSubscriptionProducts } from "@/app/(protected)/stripe/actions";
+import Previews from "../shared/Previews";
 
 export default async function Price() {
   const { profile } = await getProfile();
@@ -12,9 +13,16 @@ export default async function Price() {
   if (!profile) {
     return <></>;
   }
-  if (profile?.subscription?.customer_id) {
-    return <></>;
+  if (profile?.subscription?.stripe_customer_id) {
+    return (
+      <>
+        <Previews />
+      </>
+    );
   }
+
+  console.log("profile");
+  console.log(profile);
 
   return (
     <div>
