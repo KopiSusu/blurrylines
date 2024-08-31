@@ -1,11 +1,11 @@
 // /app/api/webhook/novita/route.ts
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server"; // Import Supabase client
 
-const supabase = createClient();
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await supabaseAdmin();
     const { event_type, payload } = await req.json();
 
     if (event_type === "ASYNC_TASK_RESULT") {

@@ -1,10 +1,12 @@
 import AuthComponent from "@/components/shared/AuthComponent";
-import React from "react";
+import React, { Suspense } from "react";
 
 function page() {
   return (
     <div>
-      <AuthComponent />
+      <Suspense>
+        <AuthComponent />
+      </Suspense>
     </div>
   );
 }

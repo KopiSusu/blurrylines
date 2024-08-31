@@ -2,12 +2,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabase = createClient();
 import fetch from "node-fetch";
 
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { profileId, images, trainingParams } = await req.json();
 
     // Upload images and initiate the training task using Novita API

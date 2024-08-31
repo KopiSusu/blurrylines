@@ -2,11 +2,11 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabase = createClient();
 const novitaApiKey = process.env.NEXT_PUBLIC_NOVITA_API_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
     const { taskId } = await req.json();
 
     // Fetch the current status of the training task
