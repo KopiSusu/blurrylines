@@ -18,17 +18,22 @@ import { ArrowRight, UploadCloud, ImageOff } from "lucide-react";
 import Image from "next/image";
 import useProcessImage from "@/utils/hooks/useProcessImage";
 import useProfile from "@/utils/hooks/useProfile";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   image: z.any(),
   prompt: z.string().optional(),
 });
 
-export default function UploadImageForm() {
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [taskId, setTaskId] = useState<string | null>(null);
+export default function UploadImageForm({ preview }: { preview?: any }) {
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    preview?.original_url || null
+  );
   const [isTaskLoading, setIstaskLoading] = useState<boolean | null>(null);
-  const [transformedImage, setTransformedImage] = useState<string | null>(null);
+  const [transformedImage, setTransformedImage] = useState<string | null>(
+    preview?.preview_url || null
+  );
+  const router = useRouter();
   const { data: profile, isLoading } = useProfile();
   const { mutate: processImage, isPending, error } = useProcessImage();
 
@@ -36,7 +41,7 @@ export default function UploadImageForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       image: null,
-      prompt: "",
+      prompt: preview?.prompt || "",
     },
   });
 
@@ -44,7 +49,6 @@ export default function UploadImageForm() {
     const file = data.image?.[0];
     if (!file && !isLoading && !isPending && !isTaskLoading) return;
 
-    // Use mutate function from useProcessImage hook to handle the upload and API call
     processImage(
       {
         file,
@@ -52,24 +56,21 @@ export default function UploadImageForm() {
         profileId: profile.id,
       },
       {
-        onSuccess: (taskId) => {
-          console.log(taskId);
-          // Set the task ID returned from the API call
-          setTaskId(taskId);
+        onSuccess: ({ previewId }) => {
+          router.push(`/preview/${previewId}`);
         },
       }
     );
   };
 
-  // Polling function to check for the transformed image
   useEffect(() => {
-    if (!taskId) return;
+    if (!preview?.task_id) return;
 
     const pollForResult = async () => {
       try {
         setIstaskLoading(true);
         const response = await fetch(
-          `/api/novita/task-result?task_id=${taskId}`
+          `/api/novita/task-result?task_id=${preview.task_id}`
         );
         const result = await response.json();
 
@@ -78,10 +79,8 @@ export default function UploadImageForm() {
           setIstaskLoading(false);
         } else if (result.task.status === "TASK_STATUS_FAILED") {
           setIstaskLoading(false);
-
           console.error("Image processing failed");
         } else {
-          // Continue polling every 3 seconds
           setTimeout(pollForResult, 3000);
         }
       } catch (error) {
@@ -91,7 +90,7 @@ export default function UploadImageForm() {
     };
 
     pollForResult();
-  }, [taskId]);
+  }, [preview?.task_id]);
 
   const isFormLoading = isLoading || isPending || isTaskLoading;
 

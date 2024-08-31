@@ -40,17 +40,15 @@ export default function useProcessImage() {
         }),
       });
 
-      console.log('response')
-      console.log(response)
-      console.log('response.ok')
-      console.log(response.ok)
-
       if (!response.ok) {
         throw new Error("Failed to process image");
       }
 
       const result = await response.json();
-      return result.taskId;
+      return {
+        taskId: result.taskId,
+        previewId: result.previewId
+      };
     },
   });
 };

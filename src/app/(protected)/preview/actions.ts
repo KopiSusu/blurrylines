@@ -1,58 +1,79 @@
 import { createClient } from '@/utils/supabase/server';
-import FormData from 'form-data';
 import fetch from 'node-fetch';
 
-// Define the type for the response
-interface NovitaApiResponse {
-  output: {
-    url: string;
-  };
+interface PreviewData {
+  task_id: string;
+  original_url: string;
+  preview_url?: string;
+  status: string;
+  profile_id: string;
+  prompt: string;
 }
 
-// Server action for generating the preview image
-export const generatePreview = async (file: File): Promise<string> => {
-  const supabase = await createClient();
+interface NovitaImg2ImgApiResponse {
+  task_id: string;
+}
 
-  const { data: { session }, error } = await supabase.auth.getSession();
-
-  if (error || !session) {
-    console.error('Error fetching session:', error);
-    throw new Error('No session found');
-  }
-
-  // Ensure the file is present
-  if (!file) {
-    throw new Error("No file uploaded");
-  }
+export const generateImg2ImgPreview = async (imageBase64: string, prompt: string): Promise<string> => {
+  const novitaApiKey = process.env.NOVITA_API_KEY!;
+  const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const novitaResponse = await fetch("https://novita.ai/api/v1/image-to-image", {
+    const novitaResponse = await fetch("https://api.novita.ai/v3/async/img2img", {
       method: "POST",
       headers: {
-        Authorization: `Bearer YOUR_API_KEY`, // Replace with your Novita.ai API key
+        Authorization: `Bearer ${novitaApiKey}`,
+        "Content-Type": "application/json",
       },
-      body: formData,
+      body: JSON.stringify({
+        extra: {
+          response_image_type: "jpeg",
+          webhook: {
+            url: webhookUrl, // Set your webhook endpoint here
+          },
+        },
+        request: {
+          model_name: "epicrealism_naturalSinRC1VAE_106430.safetensors",
+          prompt: prompt,
+          height: 552,
+          width: 512,
+          image_num: 1,
+          steps: 40,
+          seed: 1,
+          clip_skip: 1,
+          guidance_scale: 7.5,
+          sampler_name: "DPM++ 2S a Karras",
+          image_base64: imageBase64,
+        },
+      }),
     });
 
     if (!novitaResponse.ok) {
-      throw new Error("Failed to generate the altered image.");
+      throw new Error("Failed to process image with Novita.ai.");
     }
 
-    const data: unknown = await novitaResponse.json();
-
-    // Narrow the type of `data` and check if it conforms to the expected shape
-    if (!data || typeof data !== 'object' || !('output' in data)) {
-      throw new Error("Unexpected response structure");
-    }
-
-    const typedData = data as NovitaApiResponse;
-
-    return typedData.output.url;
+    const novitaResult = (await novitaResponse.json()) as NovitaImg2ImgApiResponse;
+    return novitaResult.task_id;
   } catch (error) {
-    console.error("Error generating image:", error);
-    throw new Error("Failed to generate the image.");
+    console.error("Error processing image with Novita.ai:", error);
+    throw new Error("Failed to process the image.");
   }
 };
+
+
+export const createPreview = async (previewData: PreviewData) => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("previews")
+    .insert(previewData)
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(`Error saving preview: ${error.message}`);
+  }
+
+  return data.id;
+};
+

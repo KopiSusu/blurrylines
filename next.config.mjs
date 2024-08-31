@@ -8,6 +8,11 @@ const nextConfig = {
         hostname: "faas-output-image.s3.ap-southeast-1.amazonaws.com",
         pathname: "/**", // Allows all paths under this domain
       },
+      {
+        protocol: "https",
+        hostname: "xkzhbkuzmjfwlwaurmkd.supabase.co",
+        pathname: "/**",
+      },
     ],
   },
 };
