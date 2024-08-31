@@ -93,7 +93,7 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
     }, 3000); // Poll every 3 seconds
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [preview?.task_id]);
+  }, [preview?.task_id, preview?.preview_url, transformedImage]);
 
   const isFormLoading = isLoading || isPending || isTaskLoading;
 
