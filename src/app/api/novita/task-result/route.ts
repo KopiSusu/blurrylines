@@ -41,8 +41,6 @@ export async function GET(request: Request) {
       throw new Error(`Error updating task status: ${updateError.message}`);
     }
 
-    console.log("Image processed successfully:", imageUrl);
-
     return NextResponse.json(resultData, { status: 200 });
   } catch (error) {
     console.error("Error fetching task result:", error);

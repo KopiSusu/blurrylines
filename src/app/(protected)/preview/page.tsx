@@ -1,4 +1,4 @@
-import PreviewGenForm from "@/components/shared/PreviewGenForm";
+import PreviewGenForm from "@/components/shared/preview/PreviewGenForm";
 import React from "react";
 
 function Page() {

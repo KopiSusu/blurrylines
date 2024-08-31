@@ -1,6 +1,7 @@
+// /components/shared/PreviewGenForm.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,23 +17,26 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, UploadCloud, ImageOff } from "lucide-react";
 import Image from "next/image";
+import { usePreview } from "@/components/providers/RealtimePreviewProvider"; // Import the custom hook
 import useProcessImage from "@/utils/hooks/useProcessImage";
 import useProfile from "@/utils/hooks/useProfile";
 import { useRouter } from "next/navigation";
 
+// Define your form schema
 const formSchema = z.object({
   image: z.any(),
   prompt: z.string().optional(),
 });
 
-export default function UploadImageForm({ preview }: { preview?: any }) {
-  const [previewImage, setPreviewImage] = useState<string | null>(
+export default function PreviewGenForm() {
+  const preview = usePreview(); // Get the updated preview from the context
+  const [previewImage, setPreviewImage] = React.useState<string | null>(
     preview?.original_url || null
   );
-  const [isTaskLoading, setIstaskLoading] = useState<boolean | null>(
-    preview?.task_id && !preview.preview_url ? true : null
+  const [isTaskLoading, setIstaskLoading] = React.useState<boolean | null>(
+    null
   );
-  const [transformedImage, setTransformedImage] = useState<string | null>(
+  const [transformedImage, setTransformedImage] = React.useState<string | null>(
     preview?.preview_url || null
   );
   const router = useRouter();
@@ -43,9 +47,21 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       image: null,
-      prompt: preview?.prompt || "",
+      prompt: "",
     },
   });
+
+  // Update form state when the preview context changes
+  useEffect(() => {
+    if (preview) {
+      setPreviewImage(preview.original_url || null);
+      setIstaskLoading(preview.task_id && !preview.preview_url ? true : null);
+      setTransformedImage(preview.preview_url || null);
+
+      // Update the form prompt field when preview changes
+      form.setValue("prompt", preview.prompt || "");
+    }
+  }, [preview, form]);
 
   const handleImageUpload = (data: any) => {
     const file = data.image?.[0];
@@ -64,36 +80,6 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
       }
     );
   };
-
-  useEffect(() => {
-    if (!preview?.task_id || preview?.preview_url === transformedImage) return;
-
-    const interval = setInterval(async () => {
-      try {
-        setIstaskLoading(true);
-        const response = await fetch(
-          `/api/novita/task-result?task_id=${preview.task_id}`
-        );
-        const result = await response.json();
-
-        if (result.task.status === "TASK_STATUS_SUCCEED") {
-          setTransformedImage(result.images[0].image_url);
-          setIstaskLoading(false);
-          clearInterval(interval);
-        } else if (result.task.status === "TASK_STATUS_FAILED") {
-          setIstaskLoading(false);
-          clearInterval(interval);
-          console.error("Image processing failed");
-        }
-      } catch (error) {
-        console.error("Error fetching task result:", error);
-        setIstaskLoading(false);
-        clearInterval(interval);
-      }
-    }, 3000); // Poll every 3 seconds
-
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [preview?.task_id, preview?.preview_url, transformedImage]);
 
   const isFormLoading = isLoading || isPending || isTaskLoading;
 

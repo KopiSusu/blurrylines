@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
           throw new Error(`Error updating task status: ${updateError.message}`);
         }
 
-        console.log("Image processed successfully:", imageUrl);
       } else if (payload.task.status === "TASK_STATUS_FAILED") {
         // Update the previews table with the failed status
         const { error: updateError } = await supabase

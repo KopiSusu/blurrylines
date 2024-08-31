@@ -1,23 +1,15 @@
-import PreviewGenForm from "@/components/shared/PreviewGenForm";
+// /app/(your-path)/page.tsx
+import RealtimeWrapper from "@/components/providers/RealtimePreviewProvider";
 import { getPreview } from "./actions";
+import PreviewGenForm from "@/components/shared/preview/PreviewGenForm";
 
-async function Page({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: {};
-}) {
-  const preview = await getPreview(params?.id as string);
-
-  console.log("preview");
-  console.log(preview);
+export default async function Page({ params }: { params: { id: string } }) {
+  // Fetch the initial preview data on the server side
+  const preview = await getPreview(params.id);
 
   return (
-    <div>
-      <PreviewGenForm preview={preview} />
-    </div>
+    <RealtimeWrapper initialPreview={preview} previewId={params.id}>
+      <PreviewGenForm />
+    </RealtimeWrapper>
   );
 }
-
-export default Page;

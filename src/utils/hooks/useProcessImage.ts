@@ -7,10 +7,7 @@ import { createClient } from "@/utils/supabase/client"; // Import your Supabase 
 export default function useProcessImage() {
   return useMutation({
     mutationFn: async ({ file, prompt, profileId, }: { file: File; prompt: string, profileId: string }) => {
-      console.log('start upload')
       const supabase = createClient();
-      console.log('supabase')
-      console.log(supabase)
       // Step 1: Upload the image to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("images")
@@ -18,11 +15,6 @@ export default function useProcessImage() {
           cacheControl: "3600",
           upsert: false,
         });
-
-        console.log('uploadData')
-        console.log(uploadData)
-        console.log('uploadError')
-        console.log(uploadError)
 
       if (uploadError) {
         throw new Error(`Error uploading image: ${uploadError.message}`);
