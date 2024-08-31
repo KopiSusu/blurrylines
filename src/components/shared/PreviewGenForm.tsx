@@ -29,7 +29,9 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
   const [previewImage, setPreviewImage] = useState<string | null>(
     preview?.original_url || null
   );
-  const [isTaskLoading, setIstaskLoading] = useState<boolean | null>(null);
+  const [isTaskLoading, setIstaskLoading] = useState<boolean | null>(
+    preview?.task_id && !preview.preview_url ? true : null
+  );
   const [transformedImage, setTransformedImage] = useState<string | null>(
     preview?.preview_url || null
   );
@@ -64,9 +66,9 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
   };
 
   useEffect(() => {
-    if (!preview?.task_id) return;
+    if (!preview?.task_id || preview?.preview_url === transformedImage) return;
 
-    const pollForResult = async () => {
+    const interval = setInterval(async () => {
       try {
         setIstaskLoading(true);
         const response = await fetch(
@@ -77,20 +79,17 @@ export default function UploadImageForm({ preview }: { preview?: any }) {
         if (result.task.status === "TASK_STATUS_SUCCEED") {
           setTransformedImage(result.images[0].image_url);
           setIstaskLoading(false);
+          clearInterval(interval);
         } else if (result.task.status === "TASK_STATUS_FAILED") {
           setIstaskLoading(false);
+          clearInterval(interval);
           console.error("Image processing failed");
         }
       } catch (error) {
         console.error("Error fetching task result:", error);
         setIstaskLoading(false);
+        clearInterval(interval);
       }
-    };
-
-    pollForResult(); // Initial call
-
-    const interval = setInterval(() => {
-      pollForResult();
     }, 3000); // Poll every 3 seconds
 
     return () => clearInterval(interval); // Cleanup interval on component unmount

@@ -1,6 +1,8 @@
+import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const supabase = createClient();
   const { searchParams } = new URL(request.url);
   const taskId = searchParams.get("task_id");
 
@@ -23,6 +25,24 @@ export async function GET(request: Request) {
     }
 
     const resultData = await response.json();
+
+    const imageUrl = resultData.images[0].image_url; // Extract the transformed image URL
+
+    // Update the previews table with the success status and image URL
+    const { error: updateError } = await supabase
+      .from("previews")
+      .update({
+        status: "SUCCEED",
+        preview_url: imageUrl,
+      })
+      .eq("task_id", taskId);
+
+    if (updateError) {
+      throw new Error(`Error updating task status: ${updateError.message}`);
+    }
+
+    console.log("Image processed successfully:", imageUrl);
+
     return NextResponse.json(resultData, { status: 200 });
   } catch (error) {
     console.error("Error fetching task result:", error);
