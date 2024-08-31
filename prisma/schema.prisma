@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
+}
+
+model profiles {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auth_user_id       String             @unique @db.Uuid
+  username           String?
+  full_name          String?
+  email              String?            @unique
+  avatar_url         String?
+  stripe_customer_id String?            @unique
+  subscription       subscriptions?     @relation(fields: [stripe_customer_id], references: [stripe_customer_id])
+  previews           previews[]         // One-to-many relationship with previews
+  trainings          trainings[]
+
+  @@index([stripe_customer_id])
+}
+
+model subscriptions {
+  created_at              DateTime       @default(now())
+  email                   String?        @unique
+  end_at                  DateTime?
+  stripe_customer_id      String         @unique
+  stripe_subscription_id  String?        @unique
+  profile                 profiles?
+
+  @@id([stripe_customer_id])
+  @@index([stripe_subscription_id, stripe_customer_id])
+}
+
+model trainings {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id      String   @unique
+  profile_id   String   @db.Uuid
+  status       task_statuses
+  model_name   String?
+  model_status model_statuses?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  profile      profiles  @relation(fields: [profile_id], references: [id])
+
+  @@index([task_id])
+}
+
+model previews {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id          String   @unique
+  original_image   String   // URL or reference to the original image
+  preview_url      String?  // URL of the generated preview image
+  prompt           String
+  status           preview_status @default(PENDING)   // Task status: "PENDING", "SUCCEED", "FAILED"
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  profile_id       String   @db.Uuid
+  profile          profiles @relation(fields: [profile_id], references: [id])
+
+  @@index([task_id])
+}
+
+enum preview_status {
+  PENDING
+  SUCCEED
+  FAILED
+}
+
+// Enums for Task and Model Status
+enum task_statuses {
+  UNKNOWN
+  QUEUING
+  TRAINING
+  SUCCESS
+  CANCELED
+  FAILED
+}
+
+enum model_statuses {
+  DEPLOYING
+  SERVING
+}
