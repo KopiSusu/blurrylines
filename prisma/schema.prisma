@@ -43,7 +43,7 @@ model trainings {
   model_name   String?
   model_status model_statuses?
   created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  updated_at   DateTime @updatedAt @default(now())
 
   profile      profiles  @relation(fields: [profile_id], references: [id])
 
@@ -53,12 +53,12 @@ model trainings {
 model previews {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task_id          String   @unique
-  original_image   String   // URL or reference to the original image
+  original_url     String   // URL or reference to the original image
   preview_url      String?  // URL of the generated preview image
   prompt           String
   status           preview_status @default(PENDING)   // Task status: "PENDING", "SUCCEED", "FAILED"
   created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  updated_at       DateTime @updatedAt @default(now())
   profile_id       String   @db.Uuid
   profile          profiles @relation(fields: [profile_id], references: [id])
 

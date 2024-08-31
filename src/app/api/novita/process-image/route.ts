@@ -1,15 +1,28 @@
 // /app/api/process-image/route.ts
+import { getProfile } from "@/app/(protected)/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 const novitaApiKey = process.env.NOVITA_API_KEY!;
 const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!; // Ensure you set this in your environment variables
 
-const supabase = createClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { imagePath, prompt, profileId } = await req.json();
+    console.log('start')
+    const supabase = await createClient();
+    const { profile } = await getProfile();
+
+    if (!profile) {
+      throw new Error(`Please login`);
+    }
+
+    const {
+      imagePath, 
+      prompt = "Generate a preview image of the original image",
+    } = await req.json();
+
+    console.log({ imagePath, prompt, profile  })
 
     // Fetch the image from Supabase Storage
     const { data: imageData, error: downloadError } = await supabase.storage
@@ -42,7 +55,7 @@ export async function POST(req: NextRequest) {
           },
           request: {
             model_name: "epicrealism_naturalSinRC1VAE_106430.safetensors",
-            prompt: prompt || "Generate a preview image of the original image",
+            prompt: prompt,
             height: 552,
             width: 512,
             image_num: 1,
@@ -57,6 +70,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
+
     const novitaResult = await novitaResponse.json();
     const taskId = novitaResult.task_id;
 
@@ -65,10 +79,14 @@ export async function POST(req: NextRequest) {
       .from("previews")
       .insert({
         task_id: taskId,
-        original_image: imagePath,
+        original_url: imagePath,
         status: "PENDING",
-        profile_id: profileId,
+        profile_id: profile.id,
+        prompt: prompt,
       });
+
+    console.log('insertError');
+    console.log(insertError);
 
     if (insertError) {
       throw new Error(`Error saving task details: ${insertError.message}`);

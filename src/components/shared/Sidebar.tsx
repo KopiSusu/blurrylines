@@ -22,7 +22,7 @@ function Sidebar() {
           className="sidebar-logo flex items-center justify-start space-x-2 p-6 border-b"
         >
           <Copy />
-          <b className="text-xl">JustaPeek</b>
+          <b className="text-xl">BlurryLines</b>
         </Link>
         <nav className="flex flex-col justify-between items-start w-full h-full">
           <ul className="w-full">

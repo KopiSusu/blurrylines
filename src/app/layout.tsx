@@ -13,7 +13,7 @@ const IBMPlex = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "JustaPeek",
+  title: "BlurryLines",
   description: "AI-powered image preview generator",
 };
 
