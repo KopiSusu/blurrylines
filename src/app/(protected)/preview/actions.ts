@@ -33,7 +33,7 @@ export const generateImg2ImgPreview = async (imageBase64: string, prompt: string
           },
         },
         request: {
-          model_name: "epicrealism_naturalSinRC1VAE_106430.safetensors",
+          model_name: "betterThanWords_v30_179887.safetensors",
           prompt: prompt,
           height: 552,
           width: 512,
