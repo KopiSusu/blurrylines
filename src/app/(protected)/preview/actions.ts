@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import fetch from 'node-fetch';
 
 interface PreviewData {
-  task_id: string;
+  task_id?: string;
   original_url: string;
   preview_url?: string;
   status: string;
@@ -10,56 +10,43 @@ interface PreviewData {
   prompt: string;
 }
 
-interface NovitaImg2ImgApiResponse {
-  task_id: string;
+interface NovitaReimagineApiResponse {
+  image_file: string;
+  image_type: string;
 }
 
-export const generateImg2ImgPreview = async (imageBase64: string, prompt: string): Promise<string> => {
+export const generateReimaginePreview = async (imageBase64: string): Promise<string> => {
   const novitaApiKey = process.env.NOVITA_API_KEY!;
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
-    const novitaResponse = await fetch("https://api.novita.ai/v3/async/img2img", {
+    const novitaResponse = await fetch("https://api.novita.ai/v3/reimagine", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${novitaApiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        image_file: imageBase64,
         extra: {
-          response_image_type: "jpeg",
-          webhook: {
-            url: webhookUrl, // Set your webhook endpoint here
-          },
-        },
-        request: {
-          model_name: "betterThanWords_v30_179887.safetensors",
-          prompt: prompt,
-          height: 552,
-          width: 512,
-          image_num: 1,
-          steps: 40,
-          seed: 1,
-          clip_skip: 1,
-          guidance_scale: 7.5,
-          sampler_name: "DPM++ 2S a Karras",
-          image_base64: imageBase64,
+          response_image_type: "jpeg", // Change the format to "png" or "webp" if needed
         },
       }),
     });
 
     if (!novitaResponse.ok) {
-      throw new Error("Failed to process image with Novita.ai.");
+      throw new Error("Failed to process image with Novita.ai Reimagine.");
     }
 
-    const novitaResult = (await novitaResponse.json()) as NovitaImg2ImgApiResponse;
-    return novitaResult.task_id;
+    const novitaResult = (await novitaResponse.json()) as NovitaReimagineApiResponse;
+
+    // Returning the base64 of the reimagined image
+    return novitaResult.image_file;
   } catch (error) {
-    console.error("Error processing image with Novita.ai:", error);
+    console.error("Error processing image with Novita.ai Reimagine:", error);
     throw new Error("Failed to process the image.");
   }
 };
-
 
 export const createPreview = async (previewData: PreviewData) => {
   const supabase = await createClient();
@@ -76,4 +63,3 @@ export const createPreview = async (previewData: PreviewData) => {
 
   return data.id;
 };
-

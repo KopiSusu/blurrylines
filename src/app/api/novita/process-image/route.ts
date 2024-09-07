@@ -1,5 +1,4 @@
-// /app/api/process-image/route.ts
-import { createPreview, generateImg2ImgPreview } from "@/app/(protected)/preview/actions";
+import { createPreview, generateReimaginePreview } from "@/app/(protected)/preview/actions";
 import { getProfile } from "@/app/(protected)/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -28,28 +27,48 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await imageData.arrayBuffer();
     const imageBase64 = Buffer.from(arrayBuffer).toString("base64");
 
-    // Use the generateImg2ImgPreview function to process the image with Novita.ai
-    const taskId = await generateImg2ImgPreview(imageBase64, prompt);
+    // Use the generateReimaginePreview function to process the image with Novita.ai
+    const reimaginedImageBase64 = await generateReimaginePreview(imageBase64);
 
+    // Convert the base64 result to a buffer
+    const reimaginedImageBuffer = Buffer.from(reimaginedImageBase64, 'base64');
+
+    // Upload the reimagined image to Supabase Storage
+    const newImageName = `${profile.id}//${Date.now()}_reimagined.jpeg`; // Create a unique filename
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('images')
+      .upload(newImageName, reimaginedImageBuffer, {
+        contentType: 'image/jpeg',
+      });
+
+    if (uploadError) {
+      throw new Error(`Error uploading reimagined image: ${uploadError.message}`);
+    }
+
+    // Generate the public URL for the reimagined image
+    const { data: { publicUrl: reimaginedImageUrl } } = await supabase.storage
+      .from('images')
+      .getPublicUrl(newImageName);
     // Generate the public URL for the image
     const { data: { publicUrl } } = await supabase.storage
-    .from("images")
-    .getPublicUrl(imagePath);
+      .from("images")
+      .getPublicUrl(imagePath);
 
-    if (!publicUrl) {
-      throw new Error(`Error generating public URL from original image`);
+    if (!reimaginedImageUrl) {
+      throw new Error(`Error generating public URL for the reimagined image`);
     }
 
     // Save task details in the previews table
     const previewId = await createPreview({
-      task_id: taskId,
+      // task_id: `no_task_${Date.now()}`, // Adjust if necessary
       original_url: publicUrl,
-      status: "PENDING",
+      preview_url: reimaginedImageUrl, // Save the public URL of the reimagined image
+      status: "COMPLETED",
       profile_id: profile.id,
       prompt: prompt,
     });
 
-    return NextResponse.json({ taskId, previewId });
+    return NextResponse.json({ previewId });
   } catch (error) {
     console.error("Error processing image:", error);
     return NextResponse.json({ error: "Failed to process image" }, { status: 500 });
