@@ -166,23 +166,6 @@ export default function PreviewGenForm() {
           </div>
         </section>
 
-        <FormField
-          control={form.control}
-          name="prompt"
-          render={({ field }) => (
-            <FormItem className="w-full max-w-2xl">
-              <FormControl>
-                <Textarea
-                  placeholder="Enter your prompt here..."
-                  {...field}
-                  className="w-full resize-none h-32"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <Button type="submit" className="self-start w-[40vw] mx-auto">
           {isFormLoading ? "Generating..." : "Generate Preview"}
         </Button>

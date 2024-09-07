@@ -26,7 +26,8 @@ export async function getPreviews() {
       *
     `
     )
-    .eq("profile_id", user.id);
+    .eq("profile_id", user.id)
+    .order("updated_at", { ascending: false });
 
   if (prviewsError) {
     console.error("Error fetching previews:", prviewsError);

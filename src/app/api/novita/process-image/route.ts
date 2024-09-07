@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const imageBase64 = Buffer.from(arrayBuffer).toString("base64");
 
     // Use the generateImg2ImgPreview function to process the image with Novita.ai
-    const taskId = await generateImg2ImgPreview(imageBase64, prompt);
+    const taskId = await generateImg2ImgPreview(imageBase64);
 
     // Generate the public URL for the image
     const { data: { publicUrl } } = await supabase.storage
