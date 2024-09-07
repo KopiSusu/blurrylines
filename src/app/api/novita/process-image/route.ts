@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     const previewId = await createPreview({
       task_id: taskId,
       original_url: publicUrl,
+      original_image_path: imagePath,
       status: "PENDING",
       profile_id: profile.id,
       prompt: prompt,

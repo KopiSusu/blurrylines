@@ -4,7 +4,9 @@ import sharp from 'sharp'; // Install this library using npm install sharp
 interface PreviewData {
   task_id: string;
   original_url: string;
+  original_image_path: string;
   preview_url?: string;
+  preview_image_path? : string;
   status: string;
   profile_id: string;
   prompt: string;
@@ -102,7 +104,7 @@ export const generateImg2ImgPreview = async (imageBase64: string): Promise<strin
           height: height, // Use the original height
           width: width,   // Use the original width
           image_num: 1,
-          steps: 30,
+          steps: 20,
           seed: 1,
           clip_skip: 1,
           guidance_scale: 7.5,

@@ -49,16 +49,18 @@ model trainings {
 }
 
 model previews {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task_id      String?        @unique
-  preview_url  String?
-  prompt       String
-  status       preview_status @default(PENDING)
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @default(now()) @updatedAt
-  profile_id   String         @db.Uuid
-  original_url String
-  profile      profiles       @relation(fields: [profile_id], references: [id])
+  id                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id               String?        @unique
+  preview_url           String?
+  preview_image_path    String?
+  original_url          String
+  original_image_path   String
+  prompt                String
+  status                preview_status @default(PENDING)
+  created_at            DateTime       @default(now())
+  updated_at            DateTime       @default(now()) @updatedAt
+  profile_id            String         @db.Uuid
+  profile               profiles       @relation(fields: [profile_id], references: [id])
 
   @@index([task_id])
 }
