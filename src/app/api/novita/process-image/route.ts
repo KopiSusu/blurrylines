@@ -1,5 +1,5 @@
 // /app/api/process-image/route.ts
-import { createPreview, generateImg2ImgPreview } from "@/app/(protected)/preview/actions";
+import { createPreview, generateImg2ImgPreview, getImageDimensions, getPromptFromImage } from "@/app/(protected)/preview/actions";
 import { getProfile } from "@/app/(protected)/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       throw new Error(`Please login`);
     }
 
-    const { imagePath, prompt = "Generate a preview image of the original image" } = await req.json();
+    const { imagePath } = await req.json();
 
     // Fetch the image from Supabase Storage
     const supabase = await createClient();
@@ -28,8 +28,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await imageData.arrayBuffer();
     const imageBase64 = Buffer.from(arrayBuffer).toString("base64");
 
+    // get the promtp 
+    const prompt = await getPromptFromImage(imageBase64);
+    const { width, height } = await getImageDimensions(imageBase64);
+
     // Use the generateImg2ImgPreview function to process the image with Novita.ai
-    const taskId = await generateImg2ImgPreview(imageBase64);
+    const taskId = await generateImg2ImgPreview(imageBase64, prompt, height, width);
 
     // Generate the public URL for the image
     const { data: { publicUrl } } = await supabase.storage
@@ -48,6 +52,8 @@ export async function POST(req: NextRequest) {
       status: "PENDING",
       profile_id: profile.id,
       prompt: prompt,
+      width,
+      height,
     });
 
     return NextResponse.json({ taskId, previewId });

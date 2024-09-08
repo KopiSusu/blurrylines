@@ -9,7 +9,7 @@ export default async function Previews() {
   const { previews } = await getPreviews();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 p-6 space-y-6">
       {previews?.map((preview: any) => (
         <PreviewCard key={preview.id} preview={preview} />
       ))}
@@ -20,31 +20,38 @@ export default async function Previews() {
 // Card component for each preview
 function PreviewCard({ preview }: { preview: any }) {
   return (
-    <Link href={`/preview/${preview.id}`}>
-      <div className="group perspective w-full max-w-xs mx-auto">
-        <div className="relative w-full h-60 transform-style-3d transition-transform duration-500 group-hover:rotate-y-180">
+    <div className="group perspective w-full break-inside-avoid mb-6">
+      <Link
+        href={`/preview/${preview.id}`}
+        className="w-full h-full relative group perspective break-inside-avoid mb-6"
+      >
+        <div className="relative w-full transform-style-3d transition-transform duration-500 border shadow-lg rounded-lg overflow-hidden">
           {/* Back side showing the original image */}
-          <div className="absolute w-full h-full backface-hidden transform rotate-y-180 rounded-lg shadow-lg border transition-all">
+          <div className="relative backface-hidden transform rotate-y-180 transition-all">
             <Image
               src={preview.original_url}
               alt="Original Image"
-              fill
-              className="object-cover rounded-lg"
+              // fill
+              height={preview.height}
+              width={preview.width}
+              className="object-cover"
             />
           </div>
           {/* Front side showing the preview image */}
-          <div className="absolute w-full h-full backface-hidden rounded-lg shadow-lg border transition-all group-hover:opacity-0">
+          <div className="absolute top-0 left-0 right-0 backface-hidden transition-all group-hover:opacity-0">
             {preview?.preview_url !== null && (
               <Image
                 src={preview.preview_url}
                 alt="Preview Image"
-                fill
-                className="object-cover rounded-lg"
+                // fill
+                height={preview.height}
+                width={preview.width}
+                className="object-cover"
               />
             )}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

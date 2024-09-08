@@ -10,6 +10,8 @@ interface PreviewData {
   status: string;
   profile_id: string;
   prompt: string;
+  height: number;
+  width: number;
 }
 
 interface NovitaImg2ImgApiResponse {
@@ -21,7 +23,7 @@ interface NovitaImg2PromptResponse {
 }
 
 // Function to extract a prompt from the original image using Novita's Image to Prompt API
-const getPromptFromImage = async (imageBase64: string): Promise<string> => {
+export const getPromptFromImage = async (imageBase64: string): Promise<string> => {
   const novitaApiKey = process.env.NOVITA_API_KEY!;
 
   try {
@@ -41,7 +43,10 @@ const getPromptFromImage = async (imageBase64: string): Promise<string> => {
     }
 
     const result = (await response.json()) as NovitaImg2PromptResponse;
-    return result.prompt;
+
+    const generalPrompt = "realistic, photograph, (masterpiece), 8k quality, (detailed eyes:1.2), (highest quality:1.1), highly detailed, majestic, top quality, best quality, newest, ai-generated, (intricate details:1.1), extremely beautiful, elegant, majestic, immersive background+, (detailed face, perfect face)"
+    const combinedPrompt = `${generalPrompt} ${result.prompt}`
+    return combinedPrompt;
   } catch (error) {
     console.error('Error extracting prompt from image with Novita.ai:', error);
     throw new Error('Failed to extract prompt from the image.');
@@ -49,7 +54,7 @@ const getPromptFromImage = async (imageBase64: string): Promise<string> => {
 };
 
 // Function to get the dimensions of the image
-const getImageDimensions = async (imageBase64: string): Promise<{ width: number; height: number }> => {
+export const getImageDimensions = async (imageBase64: string): Promise<{ width: number; height: number }> => {
   const imageBuffer = Buffer.from(imageBase64, 'base64');
 
   try {
@@ -65,25 +70,23 @@ const getImageDimensions = async (imageBase64: string): Promise<{ width: number;
 };
 
 // Function to generate a new image based on the extracted prompt using the Image to Image endpoint
-export const generateImg2ImgPreview = async (imageBase64: string): Promise<string> => {
+export const generateImg2ImgPreview = async (
+  imageBase64: string, 
+  prompt: string,
+  height: number,
+  width: number,
+): Promise<string> => {
   const novitaApiKey = process.env.NOVITA_API_KEY!;
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
-    // Step 1: Get the prompt from the original image
     console.log('start')
     console.log("===========================")
-    const prompt = await getPromptFromImage(imageBase64);
-    const generalPrompt = "realistic, photograph, (masterpiece), 8k quality, (detailed eyes:1.2), (highest quality:1.1), highly detailed, majestic, top quality, best quality, newest, ai-generated, (intricate details:1.1), extremely beautiful, elegant, majestic, immersive background+, (detailed face, perfect face)"
     console.log('prompt')
     console.log(prompt)
-
-    // Step 2: Get the dimensions of the original image
-    const { width, height } = await getImageDimensions(imageBase64);
     console.log('{ width, height }')
     console.log({ width, height })
 
-    // Step 3: Use the extracted prompt and original image dimensions to generate a new image
     const novitaResponse = await fetch('https://api.novita.ai/v3/async/img2img', {
       method: 'POST',
       headers: {
@@ -99,7 +102,7 @@ export const generateImg2ImgPreview = async (imageBase64: string): Promise<strin
         },
         request: {
           model_name: 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors',
-          prompt: `${generalPrompt}, ${prompt}`,
+          prompt: prompt,
           negative_prompt: "(worst quality:1.5), (low quality:1.5), (normal quality:1.5), anime, cartoon, painting, drawing, illustration, manga, sketch, nudity, young, child, hairband, headband, horns, lowres, bad anatomy, bad hands, multiple eyebrow, (cropped), extra limb, missing limbs, deformed hands, long neck, long body, long torso, (bad hands), signature, username, artist name, conjoined fingers, deformed fingers, ugly eyes, imperfect eyes, skewed eyes, unnatural face, unnatural body, error, grain, jpeg artifacts",
           height: height, // Use the original height
           width: width,   // Use the original width

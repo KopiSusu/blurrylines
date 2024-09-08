@@ -55,6 +55,8 @@ model previews {
   preview_image_path    String?
   original_url          String
   original_image_path   String
+  width                 BigInt
+  height                BigInt
   prompt                String
   status                preview_status @default(PENDING)
   created_at            DateTime       @default(now())
