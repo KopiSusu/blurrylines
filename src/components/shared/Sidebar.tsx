@@ -1,7 +1,7 @@
 "use client";
 
 import { signOut } from "@/app/(auth)/login/actions";
-import { navLinks } from "@/utils/constants";
+import { sidebarLinks } from "@/utils/constants";
 import useProfile from "@/utils/hooks/useProfile";
 import { Copy } from "lucide-react";
 import Image from "next/image";
@@ -19,14 +19,14 @@ function Sidebar() {
       <div className="flex size-full flex-col gap-0">
         <Link
           href="/"
-          className="sidebar-logo flex items-center justify-start space-x-2 p-6 border-b"
+          className="sidebar-logo flex items-center justify-start space-x-2 p-5 border-b px-6"
         >
           <Copy />
           <b className="text-xl">BlurryLines</b>
         </Link>
         <nav className="flex flex-col justify-between items-start w-full h-full">
           <ul className="w-full">
-            {navLinks.slice(0, 3).map((link, index) => {
+            {sidebarLinks.slice(0, 3).map((link, index) => {
               const isActive = link.route === pathname;
               const Icon = link.icon;
               return (
@@ -48,7 +48,7 @@ function Sidebar() {
             })}
           </ul>
           <ul className="w-full flex flex-col justify-end items-end flex-grow flex-1 h-full">
-            {navLinks.slice(3).map((link) => {
+            {sidebarLinks.slice(3).map((link) => {
               const isActive = link.route === pathname;
               const Icon = link.icon;
 

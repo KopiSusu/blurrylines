@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { Copy, Menu } from "lucide-react";
-import { navLinks } from "@/utils/constants";
+import { sidebarLinks } from "@/utils/constants";
 import useProfile from "@/utils/hooks/useProfile";
 import { signOut } from "@/app/(auth)/login/actions";
 
@@ -41,7 +41,7 @@ const MobileNavbar = () => {
                     </Link>
                     <nav className="flex flex-col justify-between items-start w-full h-full">
                       <ul className="w-full">
-                        {navLinks.slice(0, 3).map((link, index) => {
+                        {sidebarLinks.slice(0, 3).map((link, index) => {
                           const isActive = link.route === pathname;
                           const Icon = link.icon;
                           return (
@@ -65,7 +65,7 @@ const MobileNavbar = () => {
                         })}
                       </ul>
                       <ul className="w-full flex flex-col justify-end items-end flex-grow flex-1 h-full">
-                        {navLinks.slice(3).map((link) => {
+                        {sidebarLinks.slice(3).map((link) => {
                           const isActive = link.route === pathname;
                           const Icon = link.icon;
 

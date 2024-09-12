@@ -4,7 +4,7 @@ import react from "react";
 export const protectedPaths = ["/private"];
 export const authPaths = ["/login"];
 
-export const navLinks = [
+export const sidebarLinks = [
   {
     label: "Home",
     route: "/",
@@ -29,5 +29,20 @@ export const navLinks = [
     label: "subscription",
     route: "/subscription",
     icon: Wallet
+  },
+];
+
+export const navLinks = [
+  {
+    label: "Explore",
+    route: "/",
+    icon: Home,
+    protected: false,
+  },
+  {
+    label: "My Previews",
+    route: "/previews",
+    icon: GalleryHorizontal,
+    protected: true,
   },
 ];

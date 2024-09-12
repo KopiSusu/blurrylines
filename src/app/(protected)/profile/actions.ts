@@ -40,3 +40,28 @@ export async function getProfile() {
 
   return { profile };
 }
+
+
+export async function getProfileById(id: string) {
+  const supabase = await createClient();
+
+  const { data: profile, error: userError } = await supabase
+    .from('profiles')
+    .select(`
+      *
+    `)
+    .eq('id', id)
+    .single();
+
+
+  if (userError) {
+    console.error('Error fetching profile:', userError);
+    return { profile: null };
+  }
+
+  if (!profile) {
+    return { profile: null, error: 'No user found' };
+  }
+
+  return { profile };
+}

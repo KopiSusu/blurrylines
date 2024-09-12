@@ -13,16 +13,6 @@ export default async function Price() {
   if (!profile) {
     return <></>;
   }
-  if (profile?.subscription?.stripe_customer_id) {
-    return (
-      <>
-        <Previews />
-      </>
-    );
-  }
-
-  console.log("profile");
-  console.log(profile);
 
   return (
     <div>

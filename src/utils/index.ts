@@ -3,10 +3,22 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
+import moment from "moment";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function getTimeFromNow(dateStr: string) {
+  // Convert dateStr to a moment object
+  const date = moment(new Date(dateStr));
+
+  // Use fromNow function to get the time from now
+  const timeFromNow = date.fromNow();
+
+  return timeFromNow;
+}
+
 
 export async function serverGetUserFromSupabaseAuth(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createPagesServerClient({ req, res });
