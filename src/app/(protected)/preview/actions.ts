@@ -80,13 +80,6 @@ export const generateImg2ImgPreview = async (
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
-    console.log('start')
-    console.log("===========================")
-    console.log('prompt')
-    console.log(prompt)
-    console.log('{ width, height }')
-    console.log({ width, height })
-
     const novitaResponse = await fetch('https://api.novita.ai/v3/async/img2img', {
       method: 'POST',
       headers: {
