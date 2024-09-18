@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import sharp from 'sharp'; // Install this library using npm install sharp
+export const maxDuration = 300;
 
 interface PreviewData {
   task_id: string;
