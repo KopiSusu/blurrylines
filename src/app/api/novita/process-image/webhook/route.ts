@@ -3,6 +3,8 @@ import { supabaseAdmin } from "@/utils/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
 
+export const maxDuration = 300;
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await supabaseAdmin();
