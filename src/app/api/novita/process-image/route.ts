@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       throw new Error(`Please login`);
     }
 
-    const { imagePath } = await req.json();
+    const { imagePath, type } = await req.json();
 
     // Fetch the image from Supabase Storage
     const supabase = await createClient();
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const { width, height } = await getImageDimensions(imageBase64);
 
     // Use the generateImg2ImgPreview function to process the image with Novita.ai
-    const taskId = await generateImg2ImgPreview(imageBase64, prompt, height, width);
+    const taskId = await generateImg2ImgPreview(type, imageBase64, prompt, height, width);
 
     // Generate the public URL for the image
     const { data: { publicUrl } } = await supabase.storage

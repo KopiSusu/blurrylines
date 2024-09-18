@@ -72,6 +72,7 @@ export const getImageDimensions = async (imageBase64: string): Promise<{ width: 
 
 // Function to generate a new image based on the extracted prompt using the Image to Image endpoint
 export const generateImg2ImgPreview = async (
+  type: string,
   imageBase64: string, 
   prompt: string,
   height: number,
@@ -81,6 +82,7 @@ export const generateImg2ImgPreview = async (
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
+    const model = type === 'realistic' ? 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors' : 'meinahentai_v4_70340.safetensors';
     const novitaResponse = await fetch('https://api.novita.ai/v3/async/img2img', {
       method: 'POST',
       headers: {
@@ -95,7 +97,8 @@ export const generateImg2ImgPreview = async (
           },
         },
         request: {
-          model_name: 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors',
+          model_name: model,
+          // model_name: 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors',
           // model_name: 'meinahentai_v4_70340.safetensors',
           prompt: prompt,
           negative_prompt: "(worst quality:1.5), (low quality:1.5), (normal quality:1.5), anime, cartoon, painting, drawing, illustration, manga, sketch, nudity, young, child, hairband, headband, horns, lowres, bad anatomy, bad hands, multiple eyebrow, (cropped), extra limb, missing limbs, deformed hands, long neck, long body, long torso, (bad hands), signature, username, artist name, conjoined fingers, deformed fingers, ugly eyes, imperfect eyes, skewed eyes, unnatural face, unnatural body, error, grain, jpeg artifacts",

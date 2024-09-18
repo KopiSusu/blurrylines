@@ -1,7 +1,7 @@
 // /components/shared/PreviewGenForm.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,12 +15,20 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, UploadCloud, ImageOff } from "lucide-react";
+import { ArrowRight, UploadCloud, ImageOff, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { usePreview } from "@/components/providers/RealtimePreviewProvider"; // Import the custom hook
 import useProcessImage from "@/utils/hooks/useProcessImage";
 import useProfile from "@/utils/hooks/useProfile";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+} from "@/components/ui/select";
 
 // Define your form schema
 const formSchema = z.object({
@@ -30,16 +38,15 @@ const formSchema = z.object({
 
 export default function PreviewGenForm() {
   const preview = usePreview(); // Get the updated preview from the context
-  const [previewImage, setPreviewImage] = React.useState<string | null>(
+  const [previewImage, setPreviewImage] = useState<string | null>(
     preview?.original_url || null
   );
-  const [isTaskLoading, setIstaskLoading] = React.useState<boolean | null>(
-    null
-  );
-  const [transformedImage, setTransformedImage] = React.useState<string | null>(
+  const [isTaskLoading, setIstaskLoading] = useState<boolean | null>(null);
+  const [transformedImage, setTransformedImage] = useState<string | null>(
     preview?.preview_url || null
   );
   const router = useRouter();
+  const [generationType, setGenerationType] = useState<string>("realistic");
   const { data: profile, isLoading } = useProfile();
   const { mutate: processImage, isPending, error } = useProcessImage();
 
@@ -72,6 +79,7 @@ export default function PreviewGenForm() {
         file,
         prompt: data.prompt || "Generate a preview image of the original image",
         profileId: profile.id,
+        type: generationType || "realistic",
       },
       {
         onSuccess: ({ previewId }) => {
@@ -166,9 +174,29 @@ export default function PreviewGenForm() {
           </div>
         </section>
 
-        <Button type="submit" className="self-start w-[40vw] mx-auto">
-          {isFormLoading ? "Generating..." : "Generate Preview"}
-        </Button>
+        <div className="flex space-x-2">
+          {/* Select for generation type */}
+          <Select
+            onValueChange={(value) => setGenerationType(value)}
+            defaultValue={generationType}
+          >
+            <SelectTrigger className="max-w-[20vw] w-[150px]">
+              <SelectValue placeholder="Select Generation Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="realistic">Realistic</SelectItem>
+                <SelectItem value="anime">Anime</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {/* Button to submit form */}
+          <Button type="submit" className="w-[20vw] mx-auto capitalize">
+            {isFormLoading
+              ? "Generating..."
+              : `Generate ${generationType} Preview`}
+          </Button>
+        </div>
         {error && <p className="text-red-500">Error: {error.message}</p>}
       </form>
     </Form>
