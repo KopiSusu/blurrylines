@@ -4,6 +4,9 @@ import { getProfile } from "@/app/(protected)/profile/actions";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
+
 export async function POST(req: NextRequest) {
   try {
     const { profile } = await getProfile();
