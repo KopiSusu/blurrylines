@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
           .from("previews")
           .update({
             status: "SUCCEED",
+            preview_image_path: filePath,
             preview_url: publicUrl,
           })
           .eq("task_id", taskId);
