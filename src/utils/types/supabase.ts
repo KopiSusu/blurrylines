@@ -55,6 +55,7 @@ export type Database = {
           preview_url: string | null
           profile_id: string
           prompt: string
+          removal_task_id: string | null
           status: Database["public"]["Enums"]["preview_status"]
           task_id: string | null
           updated_at: string
@@ -72,6 +73,7 @@ export type Database = {
           preview_url?: string | null
           profile_id: string
           prompt: string
+          removal_task_id?: string | null
           status?: Database["public"]["Enums"]["preview_status"]
           task_id?: string | null
           updated_at?: string
@@ -89,6 +91,7 @@ export type Database = {
           preview_url?: string | null
           profile_id?: string
           prompt?: string
+          removal_task_id?: string | null
           status?: Database["public"]["Enums"]["preview_status"]
           task_id?: string | null
           updated_at?: string
@@ -165,47 +168,6 @@ export type Database = {
           stripe_subscription_id?: string | null
         }
         Relationships: []
-      }
-      trainings: {
-        Row: {
-          created_at: string
-          id: string
-          model_name: string | null
-          model_status: Database["public"]["Enums"]["model_statuses"] | null
-          profile_id: string
-          status: Database["public"]["Enums"]["task_statuses"]
-          task_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          model_name?: string | null
-          model_status?: Database["public"]["Enums"]["model_statuses"] | null
-          profile_id: string
-          status: Database["public"]["Enums"]["task_statuses"]
-          task_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          model_name?: string | null
-          model_status?: Database["public"]["Enums"]["model_statuses"] | null
-          profile_id?: string
-          status?: Database["public"]["Enums"]["task_statuses"]
-          task_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trainings_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
@@ -393,7 +355,12 @@ export type Database = {
     }
     Enums: {
       model_statuses: "DEPLOYING" | "SERVING"
-      preview_status: "PENDING" | "SUCCEED" | "FAILED" | "COMPLETED"
+      preview_status:
+        | "PENDING"
+        | "SUCCEED"
+        | "FAILED"
+        | "COMPLETED"
+        | "REMOVING"
       task_statuses:
         | "UNKNOWN"
         | "QUEUING"
