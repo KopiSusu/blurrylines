@@ -24,7 +24,7 @@ async function fetchPreview(supabase: any, taskId: string) {
     .single();
 
   if (error) {
-    throw new Error(`Failed to fetch preview: ${error.message}`);
+    return null;
   }
 
   return preview;
@@ -92,7 +92,8 @@ async function uploadImageToStorage(
   profileId: string,
   fileName: string
 ) {
-  const filePath = `${profileId}/${fileName}`;
+  const uniqueSuffix = Date.now();
+  const filePath = `${profileId}/${fileName}_${uniqueSuffix}`;
   const { error: uploadError } = await supabase.storage
     .from("images")
     .upload(filePath, imageBuffer, {
@@ -112,6 +113,42 @@ async function uploadImageToStorage(
   return { filePath, publicUrl };
 }
 
+// Function to perform face swapping using Novita.ai's Face Fusion API
+async function faceSwap(
+  faceImageBuffer: Buffer,
+  targetImageBuffer: Buffer
+): Promise<Buffer> {
+  const faceImageBase64 = faceImageBuffer.toString("base64");
+  const targetImageBase64 = targetImageBuffer.toString("base64");
+
+  const response = await fetch("https://api.novita.ai/v3beta/facefusion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      response_image_type: "jpeg",
+      face_image_file: faceImageBase64,
+      image_file: targetImageBase64,
+      face_enhance: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to perform face swapping: ${response.statusText}`);
+  }
+
+  const result = (await response.json()) as NovitaRemoveBackgroundApiResponse;
+  const faceSwappedImageBase64 = result.image_file;
+
+  // Convert the base64 image to buffer
+  const faceSwappedImageBuffer = Buffer.from(faceSwappedImageBase64, "base64");
+
+  return faceSwappedImageBuffer;
+}
+
+
 // Function to update the previews table
 async function updatePreview(supabase: any, taskId: string, updateData: any) {
   const { error: updateError } = await supabase
@@ -125,7 +162,13 @@ async function updatePreview(supabase: any, taskId: string, updateData: any) {
 }
 
 // Function to initiate object removal task
-async function initiateObjectRemovalTask(originalImageBuffer: Buffer): Promise<string> {
+async function initiateObjectRemovalTask(
+  originalImageBuffer: Buffer, 
+  prompt: String = "tiny, small transparent dot", 
+  negative_prompt: string = "human, person, man, woman, boy, girl, child, adult, people, humans, body parts, hands, arms, legs, faces, heads, human silhouettes, human shadows, human reflections, clothing, accessories, handheld objects, objects held by humans, tools, devices, weapons, items, human activities, interactions",
+  object_prompt: string = "human, person, man, woman, boy, girl, child, adult, people, humans, human holding objects, human with items, human interacting with objects, hands holding items, objects held by humans, tools, devices, weapons, accessories, clothing, items in hands, items near humans, human body parts, limbs"
+) : Promise<string> {
+  const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
   const imageBase64 = originalImageBuffer.toString("base64");
 
   const response = await fetch("https://api.novita.ai/v3/async/replace-object", {
@@ -135,19 +178,25 @@ async function initiateObjectRemovalTask(originalImageBuffer: Buffer): Promise<s
       Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
     },
     body: JSON.stringify({
+      extra: {
+        response_image_type: 'jpeg',
+        webhook: {
+          url: webhookUrl, // Set your webhook endpoint here
+        },
+      },
       image_file: imageBase64,
-      prompt: "smoke", // Specify what to replace the object with
-      negative_prompt: "human, people, woman, girl, boy",
-      object_prompt: "human, man, woman, boy, girl",
+      prompt: prompt, // Specify what to replace the object with
+      negative_prompt: negative_prompt,
+      object_prompt: object_prompt,
     }),
   });
+
 
   if (!response.ok) {
     throw new Error(`Failed to initiate object removal task: ${response.statusText}`);
   }
 
   const result = (await response.json()) as NovitaObjectRemovalApiResponse;
-
   return result.task_id;
 }
 
@@ -156,18 +205,65 @@ export async function POST(req: NextRequest) {
     const supabase = await supabaseAdmin();
     const { event_type, payload } = await req.json();
 
+    console.log('event type: ', event_type);
+
     if (event_type === "ASYNC_TASK_RESULT") {
       const taskId = payload.task.task_id;
-
-      // Fetch the preview record from the database
       const preview = await fetchPreview(supabase, taskId);
 
+      if (!preview) {
+        return NextResponse.json({ message: "no preview found for task: " + taskId });
+      }
+
+      // Fetch the preview record from the database
       if (payload.task.status === "TASK_STATUS_SUCCEED") {
         const imageUrl = payload.images[0].image_url; // Extract the generated image URL
 
-        if (taskId === preview.task_id) {
-          // Initial image generation task completed
-
+        // if (taskId === preview.task_id && !preview.generated_url) {
+        //   // Fetch the generated image
+        //   const generatedImageResponse = await fetch(imageUrl);
+        //   if (!generatedImageResponse.ok) {
+        //     throw new Error(`Failed to fetch generated image from ${imageUrl}`);
+        //   }
+        //   const generatedImageBuffer = await generatedImageResponse.buffer();
+        
+        //   // Fetch the original image from Supabase storage
+        //   const originalImageBuffer = await fetchOriginalImage(
+        //     supabase,
+        //     preview.original_image_path
+        //   );
+        
+        //   // Perform face swapping
+        //   const faceSwappedImageBuffer = await faceSwap(
+        //     originalImageBuffer,
+        //     generatedImageBuffer
+        //   );
+        
+        //   // Remove background using Novita.ai API
+        //   const faceSwappedImageBase64 = faceSwappedImageBuffer.toString("base64");
+        //   const backgroundRemovedImageBuffer = await removeBackground(faceSwappedImageBase64);
+        
+        //   // Upload the background-removed image to storage
+        //   const { filePath: generatedFilePath, publicUrl: generatedPublicUrl } =
+        //     await uploadImageToStorage(
+        //       supabase,
+        //       backgroundRemovedImageBuffer,
+        //       preview.profile_id,
+        //       `${taskId}`
+        //     );
+        
+        //   // Initiate object removal task on the original image
+        //   const removalTaskId = await initiateObjectRemovalTask(originalImageBuffer);
+        
+        //   // Update the previews table with the background-removed image info and removal task ID
+        //   await updatePreview(supabase, taskId, {
+        //     generated_image_path: generatedFilePath,
+        //     generated_url: generatedPublicUrl,
+        //     removal_task_id: removalTaskId,
+        //     status: "REMOVING",
+        //   });
+        // } 
+        if (taskId === preview.task_id && !preview.generated_url) {
           // Fetch the generated image
           const generatedImageResponse = await fetch(imageUrl);
           if (!generatedImageResponse.ok) {
@@ -190,7 +286,6 @@ export async function POST(req: NextRequest) {
               `${taskId}`
             );
 
-          // Initiate object removal task on the original image
           // Fetch the original image from Supabase storage
           const originalImageBuffer = await fetchOriginalImage(
             supabase,
@@ -206,9 +301,9 @@ export async function POST(req: NextRequest) {
             removal_task_id: removalTaskId,
             status: "REMOVING",
           });
-        } else if (taskId === preview.removal_task_id) {
-          // Object removal task completed
 
+        }
+        else if (taskId === preview.removal_task_id && !preview.preview_url) {
           // Fetch the object-removed original image
           const objectRemovedImageResponse = await fetch(imageUrl);
           if (!objectRemovedImageResponse.ok) {
@@ -246,6 +341,7 @@ export async function POST(req: NextRequest) {
               `${taskId}_final`
             );
 
+
           // Update the previews table with the final image info and status
           await updatePreview(supabase, taskId, {
             preview_image_path: finalImagePath,
@@ -257,21 +353,10 @@ export async function POST(req: NextRequest) {
           console.error("Unknown task ID:", taskId);
         }
       } else if (payload.task.status === "TASK_STATUS_FAILED") {
-        if (taskId === preview.task_id) {
-          // Initial task failed
-          await updatePreview(supabase, taskId, {
-            status: "FAILED",
-          });
-        } else if (taskId === preview.removal_task_id) {
-          // Object removal task failed
-          await updatePreview(supabase, taskId, {
-            status: "FAILED_REMOVAL",
-          });
-        } else {
-          // Unknown task ID
-          console.error("Unknown task ID:", taskId);
-        }
-
+        // Initial task failed
+        await updatePreview(supabase, taskId, {
+          status: "FAILED",
+        });
         console.error("Image processing failed:", payload.task.reason);
       }
 

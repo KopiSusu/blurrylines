@@ -82,7 +82,10 @@ export const generateImg2ImgPreview = async (
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
   try {
-    const model = type === 'realistic' ? 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors' : 'meinahentai_v4_70340.safetensors';
+    const realistic_model = 'sd3_base_medium.safetensors'
+    // const realistic_model = 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors'
+    const anime_model = 'meinahentai_v4_70340.safetensors'
+    const model = type === 'realistic' ? realistic_model : anime_model;
     const novitaResponse = await fetch('https://api.novita.ai/v3/async/img2img', {
       method: 'POST',
       headers: {
