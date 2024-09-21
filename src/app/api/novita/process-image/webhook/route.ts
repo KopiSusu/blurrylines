@@ -121,17 +121,18 @@ async function faceSwap(
   const faceImageBase64 = faceImageBuffer.toString("base64");
   const targetImageBase64 = targetImageBuffer.toString("base64");
 
-  const response = await fetch("https://api.novita.ai/v3beta/facefusion", {
+  const response = await fetch("https://api.novita.ai/v3/merge-face", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
     },
     body: JSON.stringify({
-      response_image_type: "jpeg",
+      extra: {
+        response_image_type: "jpeg"
+      },
       face_image_file: faceImageBase64,
       image_file: targetImageBase64,
-      face_enhance: true,
     }),
   });
 

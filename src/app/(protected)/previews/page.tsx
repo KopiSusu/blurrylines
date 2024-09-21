@@ -1,7 +1,7 @@
 import Previews from "@/components/shared/Previews";
 import React from "react";
 
-function page() {
+function previews() {
   return (
     <>
       <Previews />
@@ -9,4 +9,4 @@ function page() {
   );
 }
 
-export default page;
+export default previews;

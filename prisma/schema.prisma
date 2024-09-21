@@ -15,8 +15,10 @@ model profiles {
   full_name          String?
   email              String?        @unique
   avatar_url         String?
-  stripe_customer_id String?        @unique
+  face_description   String?
+  face_url           String?
   previews           previews[]
+  stripe_customer_id String?        @unique
   subscription       subscriptions? @relation(fields: [stripe_customer_id], references: [stripe_customer_id])
 
   @@index([stripe_customer_id])

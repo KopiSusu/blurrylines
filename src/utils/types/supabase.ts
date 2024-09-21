@@ -112,6 +112,8 @@ export type Database = {
           auth_user_id: string
           avatar_url: string | null
           email: string | null
+          face_description: string | null
+          face_url: string | null
           full_name: string | null
           id: string
           stripe_customer_id: string | null
@@ -121,6 +123,8 @@ export type Database = {
           auth_user_id: string
           avatar_url?: string | null
           email?: string | null
+          face_description?: string | null
+          face_url?: string | null
           full_name?: string | null
           id?: string
           stripe_customer_id?: string | null
@@ -130,6 +134,8 @@ export type Database = {
           auth_user_id?: string
           avatar_url?: string | null
           email?: string | null
+          face_description?: string | null
+          face_url?: string | null
           full_name?: string | null
           id?: string
           stripe_customer_id?: string | null
