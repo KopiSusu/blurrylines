@@ -81,8 +81,11 @@ export const generateImg2ImgPreview = async (
   const novitaApiKey = process.env.NOVITA_API_KEY!;
   const webhookUrl = process.env.PROCESS_IMAGE_WEBHOOK_URL!;
 
+  // cyberrealistic_v40_151857
+  // epicrealism_pureEvolutionV5_97793
+  // epicphotogasm_x_131265
   try {
-    const realistic_model = 'sd3_base_medium.safetensors'
+    const realistic_model = 'epicphotogasm_x_131265.safetensors'
     // const realistic_model = 'protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors'
     const anime_model = 'meinahentai_v4_70340.safetensors'
     const model = type === 'realistic' ? realistic_model : anime_model;

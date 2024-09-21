@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
     const imageBase64 = Buffer.from(arrayBuffer).toString("base64");
 
     // get the promtp 
-    const prompt = await getPromptFromImage(imageBase64);
+    const imagePrompt = await getPromptFromImage(imageBase64);
+    const prompt = `A short haired blond girl, blue eyes, ${imagePrompt}`
     const { width, height } = await getImageDimensions(imageBase64);
 
     // Use the generateImg2ImgPreview function to process the image with Novita.ai
