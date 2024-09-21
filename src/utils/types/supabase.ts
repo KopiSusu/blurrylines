@@ -45,36 +45,54 @@ export type Database = {
       previews: {
         Row: {
           created_at: string
+          generated_image_path: string | null
+          generated_url: string | null
+          height: number
           id: string
+          original_image_path: string
           original_url: string
+          preview_image_path: string | null
           preview_url: string | null
           profile_id: string
           prompt: string
           status: Database["public"]["Enums"]["preview_status"]
-          task_id: string
+          task_id: string | null
           updated_at: string
+          width: number
         }
         Insert: {
           created_at?: string
+          generated_image_path?: string | null
+          generated_url?: string | null
+          height: number
           id?: string
+          original_image_path: string
           original_url: string
+          preview_image_path?: string | null
           preview_url?: string | null
           profile_id: string
           prompt: string
           status?: Database["public"]["Enums"]["preview_status"]
-          task_id: string
+          task_id?: string | null
           updated_at?: string
+          width: number
         }
         Update: {
           created_at?: string
+          generated_image_path?: string | null
+          generated_url?: string | null
+          height?: number
           id?: string
+          original_image_path?: string
           original_url?: string
+          preview_image_path?: string | null
           preview_url?: string | null
           profile_id?: string
           prompt?: string
           status?: Database["public"]["Enums"]["preview_status"]
-          task_id?: string
+          task_id?: string | null
           updated_at?: string
+          width?: number
         }
         Relationships: [
           {
@@ -375,7 +393,7 @@ export type Database = {
     }
     Enums: {
       model_statuses: "DEPLOYING" | "SERVING"
-      preview_status: "PENDING" | "SUCCEED" | "FAILED"
+      preview_status: "PENDING" | "SUCCEED" | "FAILED" | "COMPLETED"
       task_statuses:
         | "UNKNOWN"
         | "QUEUING"

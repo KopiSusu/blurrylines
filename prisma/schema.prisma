@@ -51,10 +51,12 @@ model trainings {
 model previews {
   id                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task_id               String?        @unique
-  preview_url           String?
-  preview_image_path    String?
+  generated_url         String?
+  generated_image_path  String?
   original_url          String
   original_image_path   String
+  preview_url           String?
+  preview_image_path    String?
   width                 BigInt
   height                BigInt
   prompt                String
