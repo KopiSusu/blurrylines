@@ -17,6 +17,7 @@ model profiles {
   avatar_url         String?
   face_description   String?
   face_url           String?
+  face_image_path    String?
   previews           previews[]
   stripe_customer_id String?        @unique
   subscription       subscriptions? @relation(fields: [stripe_customer_id], references: [stripe_customer_id])

@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
 
     // get the promtp 
     const imagePrompt = await getPromptFromImage(imageBase64);
-    const prompt = `A short haired blond girl, blue eyes, ${imagePrompt}`
+    const facePrompt = profile.face_descption || 'A short haired blond girl, blue eyes';
+    const prompt = `${facePrompt}, ${imagePrompt}, ${facePrompt},`
     const { width, height } = await getImageDimensions(imageBase64);
 
     // Use the generateImg2ImgPreview function to process the image with Novita.ai
@@ -66,3 +67,45 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to process image" }, { status: 500 });
   }
 }
+
+
+ // if (taskId === preview.task_id && !preview.generated_url) {
+        //   // Fetch the generated image
+        //   const generatedImageResponse = await fetch(imageUrl);
+        //   if (!generatedImageResponse.ok) {
+        //     throw new Error(`Failed to fetch generated image from ${imageUrl}`);
+        //   }
+        //   const generatedImageBuffer = await generatedImageResponse.buffer();
+
+        //   // Convert the generated image buffer to base64
+        //   const generatedImageBase64 = generatedImageBuffer.toString("base64");
+
+        //   // Remove background using Novita.ai API
+        //   const backgroundRemovedImageBuffer = await removeBackground(generatedImageBase64);
+
+        //   // Upload the background-removed image to storage
+        //   const { filePath: generatedFilePath, publicUrl: generatedPublicUrl } =
+        //     await uploadImageToStorage(
+        //       supabase,
+        //       backgroundRemovedImageBuffer,
+        //       preview.profile_id,
+        //       `${taskId}`
+        //     );
+
+        //   // Fetch the original image from Supabase storage
+        //   const originalImageBuffer = await fetchOriginalImage(
+        //     supabase,
+        //     preview.original_image_path
+        //   );
+
+        //   const removalTaskId = await initiateObjectRemovalTask(originalImageBuffer);
+
+        //   // Update the previews table with the background-removed image info and removal task ID
+        //   await updatePreview(supabase, taskId, {
+        //     generated_image_path: generatedFilePath,
+        //     generated_url: generatedPublicUrl,
+        //     removal_task_id: removalTaskId,
+        //     status: "REMOVING",
+        //   });
+
+        // }

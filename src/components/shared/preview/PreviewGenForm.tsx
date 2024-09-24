@@ -46,7 +46,7 @@ export default function PreviewGenForm() {
     preview?.preview_url || null
   );
   const router = useRouter();
-  const [generationType, setGenerationType] = useState<string>("anime");
+  const [generationType, setGenerationType] = useState<string>("realistic");
   const { data: profile, isLoading } = useProfile();
   const { mutate: processImage, isPending, error } = useProcessImage();
 
