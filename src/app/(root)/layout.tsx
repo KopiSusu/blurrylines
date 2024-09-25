@@ -10,7 +10,7 @@ function RootLayout({ children }: { children: React.ReactNode }) {
       <MobileNavbar />
       <div
         id="root-container"
-        className="flex-1 flex-shrink-0 w-full md:max-w-4xl lg:max-w-7xl mx-auto"
+        className="flex-1 flex-shrink-0 w-full md:max-w-4xl lg:max-w-screen-2xl mx-auto"
       >
         <div id="wrapper" className="px-8 py-8">
           {children}
