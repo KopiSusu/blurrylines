@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     // get the promtp 
     const imagePrompt = await getPromptFromImage(imageBase64);
-    const facePrompt = profile.face_descption || 'A short haired blond girl, blue eyes';
+    const facePrompt = profile.face.prompt || 'A short haired blond girl, blue eyes';
     const prompt = `${facePrompt}, ${imagePrompt}, ${facePrompt},`
     const { width, height } = await getImageDimensions(imageBase64);
 

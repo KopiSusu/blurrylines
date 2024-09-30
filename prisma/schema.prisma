@@ -15,10 +15,12 @@ model profiles {
   full_name          String?
   email              String?        @unique
   avatar_url         String?
+  avatar_image_path  String?
   face_description   String?
   face_url           String?
   face_image_path    String?
   previews           previews[]
+  face               faces?
   stripe_customer_id String?        @unique
   subscription       subscriptions? @relation(fields: [stripe_customer_id], references: [stripe_customer_id])
 
@@ -56,6 +58,27 @@ model previews {
   profile               profiles       @relation(fields: [profile_id], references: [id])
 
   @@index([task_id, removal_task_id])
+}
+
+
+model faces {
+  id                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id               String?        @unique
+  original_url          String
+  original_image_path   String
+  face_url              String?
+  face_image_path       String?
+  width                 BigInt
+  height                BigInt
+  prompt                String
+  status                preview_status @default(PENDING)
+  created_at            DateTime       @default(now())
+  updated_at            DateTime       @default(now()) @updatedAt
+  profile_id            String         @db.Uuid @unique
+  profile               profiles       @relation(fields: [profile_id], references: [id])
+  // profiles              profiles[]
+
+  @@index([task_id])
 }
 
 enum preview_status {

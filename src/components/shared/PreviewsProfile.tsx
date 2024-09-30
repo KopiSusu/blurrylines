@@ -15,7 +15,7 @@ export default async function PreviewsProfile({ id }: { id: string }) {
   const { previews } = await getPreviewsByProfile(id);
 
   return (
-    <div className="columns-1xs sm:columns-2xs lg:columns-3xs gap-6 p-6 space-y-6">
+    <div className="columns-1xs sm:columns-2xs lg:columns-2xs gap-6 p-6 space-y-6">
       {previews?.map((preview: any) => (
         <PreviewCard key={preview.id} preview={preview} />
       ))}

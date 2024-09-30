@@ -25,6 +25,8 @@ import { cn } from "@/utils";
 import { uploadImage } from "@/utils/client/uploadImage";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfile } from "@/app/(protected)/profile/actions";
+import useProcessFace from "@/utils/hooks/useProcessFace";
+import { useRouter } from "next/navigation";
 
 const profileDetailFormSchema = z.object({
   username: z
@@ -44,7 +46,8 @@ const profileDetailFormSchema = z.object({
       message: "Full name must not be longer than 30 characters.",
     }),
   avatar_url: z.string().optional(),
-  face_description: z
+  face_url: z.string().optional(),
+  prompt: z
     .string({
       required_error: "Please add a facial description.",
     })
@@ -56,9 +59,13 @@ const profileDetailFormSchema = z.object({
 type ProfileDetailFormValues = z.infer<typeof profileDetailFormSchema>;
 
 const ProfileDetailForm: React.FC = () => {
+  const router = useRouter();
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
+  console.log(profile);
+  const { mutate: processFace, isPending, error } = useProcessFace();
 
   const inputAvatarImageRef = useRef<HTMLInputElement>(null);
+  const inputFaceImageRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileDetailFormValues>({
     resolver: zodResolver(profileDetailFormSchema),
@@ -66,7 +73,8 @@ const ProfileDetailForm: React.FC = () => {
       username: "",
       full_name: "",
       avatar_url: "",
-      face_description: "",
+      face_url: "",
+      prompt: "",
     },
     mode: "onChange",
   });
@@ -77,7 +85,8 @@ const ProfileDetailForm: React.FC = () => {
         username: profile.username || "",
         full_name: profile.full_name || "",
         avatar_url: profile.avatar_url || "",
-        face_description: profile.face_description || "",
+        face_url: profile.face.face_url || "",
+        prompt: profile.face.prompt || "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,16 +112,41 @@ const ProfileDetailForm: React.FC = () => {
     }
   };
 
+  const handleUploadFace = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || isPending || isSubmitting) return;
+    setIsSubmitting(true);
+
+    processFace(
+      {
+        file,
+        profileId: profile.id,
+        type: "realistic",
+      },
+      {
+        onSuccess: ({ faceId }) => {
+          setIsSubmitting(false);
+          router.push(`/profile`);
+        },
+      }
+    );
+  };
+
   const handleUploadAvatar = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !profile) return;
 
     try {
-      const publicUrl = await uploadImage(file, "avatars", `${profile.id}/`);
+      const { publicUrl, path } = await uploadImage(
+        file,
+        "avatars",
+        `${profile.id}/`
+      );
       // Update the avatar_url in the form and profile
       form.setValue("avatar_url", publicUrl);
       await updateProfile({
         avatar_url: publicUrl,
+        avatar_image_path: path,
       });
       toast({
         title: "Avatar updated",
@@ -152,7 +186,8 @@ const ProfileDetailForm: React.FC = () => {
                   form.reset({
                     full_name: profile.full_name || "",
                     username: profile.username || "",
-                    face_description: profile.face_description || "",
+                    face_url: profile.face.face_url || "",
+                    prompt: profile.face.prompt || "",
                     avatar_url: profile.avatar_url || "",
                   });
                 }
@@ -258,40 +293,72 @@ const ProfileDetailForm: React.FC = () => {
           <div className="flex items-center justify-start pt-8 w-full">
             <FormField
               control={form.control}
-              name="face_description"
+              name="face_url"
               render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Facial Description</FormLabel>
-                  <FormControl className="w-full">
-                    <div className="flex items-center justify-start w-full gap-4">
-                      <Avatar
-                        className={cn(
-                          "w-[100px] h-[100px] flex-none rounded-md border-none"
-                        )}
-                      >
-                        <AvatarImage
-                          src={profile?.face_url}
-                          className="rounded-md"
-                        />
-                        <AvatarFallback className="rounded-md">
-                          <UserPlus name="user-plus" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <Textarea
-                        placeholder="Describe your face..."
-                        {...field}
-                        className="h-full w-full flex-1 flex-grow min-h-[100px]"
-                      />
-                    </div>
+                <FormItem>
+                  <FormLabel>Face</FormLabel>
+                  <FormControl>
+                    <input
+                      ref={inputFaceImageRef}
+                      onChange={handleUploadFace}
+                      type="file"
+                      className="hidden"
+                      accept="image/png, image/jpeg, image/gif"
+                    />
                   </FormControl>
-                  <FormDescription>
-                    Provide a detailed description of your facial features.
-                  </FormDescription>
-                  <FormMessage />
+
+                  <div className="flex items-start space-x-5">
+                    <Avatar
+                      className={cn(
+                        "w-[200px] h-[200px] flex-none cursor-pointer rounded-md",
+                        {
+                          "border-2 border-dashed border-foreground/20":
+                            !field.value,
+                        }
+                      )}
+                      onClick={() => inputFaceImageRef.current?.click()}
+                    >
+                      <AvatarImage src={field.value} />
+                      <AvatarFallback>
+                        <UserPlus name="user-plus" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="mb-5"
+                        onClick={() => inputFaceImageRef.current?.click()}
+                        disabled={isSubmitting}
+                      >
+                        Upload new Face
+                      </Button>
+
+                      <FormDescription>
+                        At least 800x800 px recommended. <br /> JPG, PNG, or GIF
+                        is allowed.
+                      </FormDescription>
+                      <FormMessage />
+                    </div>
+                  </div>
                 </FormItem>
               )}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="prompt"
+            render={({ field }) => (
+              <FormItem className="pt-6">
+                <FormLabel>Face Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Facial description..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </form>
     </Form>

@@ -19,7 +19,13 @@ interface NovitaObjectRemovalApiResponse {
 async function fetchPreview(supabase: any, taskId: string) {
   const { data: preview, error } = await supabase
     .from("previews")
-    .select("*, profile:profiles(*)")
+    .select(`
+      *,
+      profile:profiles(
+        *,
+        face:faces(*)
+      )
+    `)
     .or(`task_id.eq.${taskId},removal_task_id.eq.${taskId}`)
     .single();
 
@@ -27,16 +33,51 @@ async function fetchPreview(supabase: any, taskId: string) {
     return null;
   }
 
+  // Ensure only one face is returned
+  if (preview && preview.profile && preview.profile.face) {
+    preview.profile.face = preview.profile.face[0] || null; // Get the first face or null
+  }
+
   return preview;
 }
 
-// Function to remove background using Novita.ai API
-async function removeBackground(imageBase64: string): Promise<Buffer> {
-  const novitaResponse = await fetch("https://api.novita.ai/v3/remove-background", {
-    method: "POST",
+
+// Define the expected response structure from Novita.ai
+interface NovitaRemoveBackgroundApiResponse {
+  image_file: string; // Base64 encoded image string
+}
+
+type ReturnTypeOption = 'buffer' | 'base64';
+
+/**
+ * Removes the background from an image using Novita.ai API.
+ *
+ * @param imageBase64 - The Base64 encoded string of the original image.
+ * @param returnType - The desired return type: 'buffer' or 'base64'. Defaults to 'buffer'.
+ * @returns A Promise that resolves to a Buffer or Base64 string of the processed image.
+ * @throws Will throw an error if the API request fails or the response is invalid.
+ */
+export async function removeBackground(
+  imageBase64: string,
+  returnType: ReturnTypeOption = 'buffer'
+): Promise<Buffer | string> {
+  // Validate the returnType parameter
+  if (!['buffer', 'base64'].includes(returnType)) {
+    throw new Error(`Invalid returnType: ${returnType}. Expected 'buffer' or 'base64'.`);
+  }
+
+  // Ensure the API key is available
+  const apiKey = process.env.NOVITA_API_KEY;
+  if (!apiKey) {
+    throw new Error('NOVITA_API_KEY is not defined in the environment variables.');
+  }
+
+  // Make the API request to remove the background
+  const novitaResponse = await fetch('https://api.novita.ai/v3/remove-background', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       image_file: imageBase64,
@@ -44,16 +85,27 @@ async function removeBackground(imageBase64: string): Promise<Buffer> {
   });
 
   if (!novitaResponse.ok) {
-    throw new Error(`Failed to remove background: ${novitaResponse.statusText}`);
+    const errorText = await novitaResponse.text();
+    throw new Error(`Failed to remove background: ${novitaResponse.status} ${novitaResponse.statusText}. ${errorText}`);
   }
 
   const novitaResult = (await novitaResponse.json()) as NovitaRemoveBackgroundApiResponse;
+
+  // Validate the response
+  if (!novitaResult || !novitaResult.image_file) {
+    throw new Error('Invalid response from Novita.ai: Missing image_file.');
+  }
+
   const backgroundRemovedImageBase64 = novitaResult.image_file;
 
-  // Convert the base64 image to buffer
-  const backgroundRemovedImageBuffer = Buffer.from(backgroundRemovedImageBase64, "base64");
-
-  return backgroundRemovedImageBuffer;
+  if (returnType === 'buffer') {
+    // Convert the Base64 image to Buffer
+    const backgroundRemovedImageBuffer = Buffer.from(backgroundRemovedImageBase64, 'base64');
+    return backgroundRemovedImageBuffer;
+  } else {
+    // Return the Base64 string as-is
+    return backgroundRemovedImageBase64;
+  }
 }
 
 // Function to fetch the original image from Supabase storage
@@ -210,6 +262,9 @@ export async function POST(req: NextRequest) {
       const taskId = payload.task.task_id;
       const preview = await fetchPreview(supabase, taskId);
       const profile = preview?.profile;
+      console.log("profile");
+      console.log('god i hope this just works');
+      console.log(profile)
 
       if (!preview) {
         return NextResponse.json({ message: "no preview found for task: " + taskId });
@@ -232,7 +287,7 @@ export async function POST(req: NextRequest) {
         
 
           // Fetch the face image from Supabase storage
-          const faceImageBuffer = await fetchOriginalImage(supabase, profile.face_image_path);
+          const faceImageBuffer = await fetchOriginalImage(supabase, profile.face.face_image_path);
           // Perform face swapping
           const faceSwappedImageBuffer = await faceSwap(
             faceImageBuffer,
@@ -240,14 +295,14 @@ export async function POST(req: NextRequest) {
           );
 
           // Remove background using Novita.ai API
-          const faceSwappedImageBase64 = faceSwappedImageBuffer.toString("base64");
-          const backgroundRemovedImageBuffer = await removeBackground(faceSwappedImageBase64);
+          // const faceSwappedImageBase64 = faceSwappedImageBuffer.toString("base64");
+          // const backgroundRemovedImageBuffer = await removeBackground(faceSwappedImageBase64, "buffer");
         
           // Upload the background-removed image to storage
           const { filePath: generatedFilePath, publicUrl: generatedPublicUrl } =
             await uploadImageToStorage(
               supabase,
-              backgroundRemovedImageBuffer,
+              faceSwappedImageBuffer as Buffer,
               preview.profile_id,
               `${taskId}`
             );

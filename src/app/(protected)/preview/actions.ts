@@ -1,3 +1,4 @@
+
 import { createClient } from '@/utils/supabase/server';
 import sharp from 'sharp'; // Install this library using npm install sharp
 export const maxDuration = 300;
@@ -15,11 +16,11 @@ interface PreviewData {
   width: number;
 }
 
-interface NovitaImg2ImgApiResponse {
+export interface NovitaImg2ImgApiResponse {
   task_id: string;
 }
 
-interface NovitaImg2PromptResponse {
+export interface NovitaImg2PromptResponse {
   prompt: string;
 }
 
