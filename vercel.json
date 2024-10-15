@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/novita/process-image/webhook/route.ts": {
+    "api/novita/process-image/webhook": {
       "maxDuration": 300
     }
   }
