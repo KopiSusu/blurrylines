@@ -46,7 +46,7 @@ type ReturnTypeOption = 'buffer' | 'base64';
  * @returns A Promise that resolves to a Buffer or Base64 string of the processed image.
  * @throws Will throw an error if the API request fails or the response is invalid.
  */
-export async function removeBackground(
+async function removeBackground(
   imageBase64: string,
   returnType: ReturnTypeOption = 'buffer'
 ): Promise<Buffer | string> {
