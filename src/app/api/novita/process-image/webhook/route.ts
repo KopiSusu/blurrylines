@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
 import sharp from "sharp"; // Import sharp for image processing
 
+
 export const maxDuration = 300;
 export const runtime = 'nodejs';
 
@@ -47,67 +48,6 @@ async function fetchPreview(supabase: any, taskId: string) {
 interface NovitaRemoveBackgroundApiResponse {
   image_file: string; // Base64 encoded image string
 }
-
-type ReturnTypeOption = 'buffer' | 'base64';
-
-/**
- * Removes the background from an image using Novita.ai API.
- *
- * @param imageBase64 - The Base64 encoded string of the original image.
- * @param returnType - The desired return type: 'buffer' or 'base64'. Defaults to 'buffer'.
- * @returns A Promise that resolves to a Buffer or Base64 string of the processed image.
- * @throws Will throw an error if the API request fails or the response is invalid.
- */
-// export async function removeBackground(
-//   imageBase64: string,
-//   returnType: ReturnTypeOption = 'buffer'
-// ): Promise<Buffer | string> {
-//   // Validate the returnType parameter
-//   if (!['buffer', 'base64'].includes(returnType)) {
-//     throw new Error(`Invalid returnType: ${returnType}. Expected 'buffer' or 'base64'.`);
-//   }
-
-//   // Ensure the API key is available
-//   const apiKey = process.env.NOVITA_API_KEY;
-//   if (!apiKey) {
-//     throw new Error('NOVITA_API_KEY is not defined in the environment variables.');
-//   }
-
-//   // Make the API request to remove the background
-//   const novitaResponse = await fetch('https://api.novita.ai/v3/remove-background', {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       Authorization: `Bearer ${apiKey}`,
-//     },
-//     body: JSON.stringify({
-//       image_file: imageBase64,
-//     }),
-//   });
-
-//   if (!novitaResponse.ok) {
-//     const errorText = await novitaResponse.text();
-//     throw new Error(`Failed to remove background: ${novitaResponse.status} ${novitaResponse.statusText}. ${errorText}`);
-//   }
-
-//   const novitaResult = (await novitaResponse.json()) as NovitaRemoveBackgroundApiResponse;
-
-//   // Validate the response
-//   if (!novitaResult || !novitaResult.image_file) {
-//     throw new Error('Invalid response from Novita.ai: Missing image_file.');
-//   }
-
-//   const backgroundRemovedImageBase64 = novitaResult.image_file;
-
-//   if (returnType === 'buffer') {
-//     // Convert the Base64 image to Buffer
-//     const backgroundRemovedImageBuffer = Buffer.from(backgroundRemovedImageBase64, 'base64');
-//     return backgroundRemovedImageBuffer;
-//   } else {
-//     // Return the Base64 string as-is
-//     return backgroundRemovedImageBase64;
-//   }
-// }
 
 // Function to fetch the original image from Supabase storage
 async function fetchOriginalImage(supabase: any, originalImagePath: string): Promise<Buffer> {
