@@ -45,9 +45,16 @@ function Navbar() {
         <div className="flex items-center space-x-4">
           {profile !== null ? (
             <>
-              <Link href="/preview" className="flex items-center gap-2">
-                <Button className="w-full">Generate Preview</Button>
-              </Link>
+              {(!profile?.face || !profile?.face?.face_image_path) && (
+                <Link href="/profile" className="flex items-center gap-2">
+                  <Button className="w-full">Generate Face</Button>
+                </Link>
+              )}
+              {profile?.face && profile?.face?.face_image_path && (
+                <Link href="/preview" className="flex items-center gap-2">
+                  <Button className="w-full">Generate Preview</Button>
+                </Link>
+              )}
               <ProfileMenu />
             </>
           ) : (
