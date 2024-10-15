@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
           if (!generatedImageResponse.ok) {
             throw new Error(`Failed to fetch generated image from ${imageUrl}`);
           }
-          const generatedImageBuffer = await generatedImageResponse.buffer();
+          const generatedImageBuffer = await generatedImageResponse.arrayBuffer();
         
 
           // Fetch the face image from Supabase storage
@@ -292,7 +292,7 @@ export async function POST(req: NextRequest) {
           // Perform face swapping
           const faceSwappedImageBuffer = await faceSwap(
             faceImageBuffer,
-            generatedImageBuffer
+            Buffer.from(generatedImageBuffer)
           );
 
           // Remove background using Novita.ai API
@@ -329,7 +329,7 @@ export async function POST(req: NextRequest) {
           if (!objectRemovedImageResponse.ok) {
             throw new Error(`Failed to fetch object-removed image from ${imageUrl}`);
           }
-          const objectRemovedImageBuffer = await objectRemovedImageResponse.buffer();
+          const objectRemovedImageBuffer = await objectRemovedImageResponse.arrayBuffer();
 
           // Fetch the background-removed generated image from storage
           const { data: backgroundRemovedImageBlob, error } = await supabase.storage
@@ -348,7 +348,7 @@ export async function POST(req: NextRequest) {
 
           // Composite images using sharp
           const finalImageBuffer = await compositeImages(
-            objectRemovedImageBuffer,
+            Buffer.from(objectRemovedImageBuffer),
             backgroundRemovedImageBuffer
           );
 
