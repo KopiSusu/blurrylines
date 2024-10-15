@@ -177,7 +177,8 @@ export async function POST(req: NextRequest) {
           if (!generatedImageResponse.ok) {
             throw new Error(`Failed to fetch generated image from ${imageUrl}`);
           }
-          const generatedImageBuffer = await generatedImageResponse.buffer();
+          const generatedImageArrayBuffer = await generatedImageResponse.arrayBuffer();
+          const generatedImageBuffer = Buffer.from(generatedImageArrayBuffer)
 
           // Remove background using Novita.ai API
           const generatedImageBase64 = generatedImageBuffer.toString("base64");
