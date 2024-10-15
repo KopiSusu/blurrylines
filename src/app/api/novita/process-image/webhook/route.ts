@@ -2,7 +2,8 @@
 import { supabaseAdmin } from "@/utils/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
-import sharp from "sharp"; // Import sharp for image processing
+// import sharp from "sharp"; // Import sharp for image processing
+import { Jimp } from 'jimp';
 
 export const maxDuration = 300;
 export const runtime = 'nodejs';
@@ -126,14 +127,30 @@ async function fetchOriginalImage(supabase: any, originalImagePath: string): Pro
   return originalImageBuffer;
 }
 
-// Function to composite images using sharp
+// // Function to composite images using sharp
+// async function compositeImages(
+//   baseImageBuffer: Buffer,
+//   overlayImageBuffer: Buffer
+// ): Promise<Buffer> {
+//   const finalImageBuffer = await sharp(baseImageBuffer)
+//     .composite([{ input: overlayImageBuffer }])
+//     .toBuffer();
+
+//   return finalImageBuffer;
+// }
 async function compositeImages(
   baseImageBuffer: Buffer,
   overlayImageBuffer: Buffer
 ): Promise<Buffer> {
-  const finalImageBuffer = await sharp(baseImageBuffer)
-    .composite([{ input: overlayImageBuffer }])
-    .toBuffer();
+  // Load the base and overlay images using Jimp
+  const baseImage = await Jimp.read(baseImageBuffer);
+  const overlayImage = await Jimp.read(overlayImageBuffer);
+
+  // Composite the images (overlay on top of base)
+  baseImage.composite(overlayImage, 0, 0); // Adjust X, Y positions as necessary
+
+  // Get the final image as a buffer
+  const finalImageBuffer = await baseImage.getBuffer('image/png');
 
   return finalImageBuffer;
 }

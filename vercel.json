@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/novita/process-image/webhook": {
-      "maxDuration": 300
-    }
-  }
-}
