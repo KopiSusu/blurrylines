@@ -5,6 +5,7 @@ import fetch from "node-fetch";
 import sharp from "sharp"; // Import sharp for image processing
 
 export const maxDuration = 300;
+export const runtime = 'nodejs';
 
 interface NovitaRemoveBackgroundApiResponse {
   image_file: string;
