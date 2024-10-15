@@ -23,16 +23,14 @@ export function getTimeFromNow(dateStr: string) {
 export async function serverGetUserFromSupabaseAuth(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createPagesServerClient({ req, res });
 
-  const { data: session } = await supabase.auth.getSession();
+  const {
+    data: { user: authUser },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (!session) {
-    return { error: "Unauthorised" };
-  }
 
-  const authUser = session?.session?.user;
-
-  if (!authUser) {
-    return { error: "No user found?" };
+  if (userError || !authUser) {
+    return { error: userError || "No user found?" };
   }
 
   const { data: user, error } = await supabase
@@ -57,7 +55,6 @@ export async function serverGetUserFromSupabaseAuth(req: NextApiRequest, res: Ne
 
   return {
     user,
-    session,
     supabase,
     error: null,
   };

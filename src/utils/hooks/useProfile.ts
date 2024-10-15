@@ -8,8 +8,8 @@ export default function useProfile() {
     queryKey: ["profile"],
     queryFn: async () => {
       const supabase = createClient();
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user) {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
         // Fetch user information profile
         const { data: profile } = await supabase
           .from("profiles")
@@ -18,7 +18,7 @@ export default function useProfile() {
             subscription:subscriptions(*), 
             face:faces(*)`
           )
-          .eq("id", data.session.user.id)
+          .eq("id", data.user.id)
           .single();
 
         // Extract the single face object from the array

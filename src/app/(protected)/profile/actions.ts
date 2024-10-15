@@ -10,18 +10,11 @@ export async function getProfile() {
   const supabase = await createClient();
 
   const {
-    data: { session },
+    data: { user },
     error,
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getUser();
 
-  if (error || !session) {
-    console.error('Error fetching session:', error);
-    return { profile: null, error: 'No session found' };
-  }
-
-  const user = session?.user;
-
-  if (!user) {
+  if (error || !user) {
     return { profile: null, error: 'No user found' };
   }
 
@@ -89,18 +82,12 @@ export async function updateProfile(data: ProfileData) {
 
   // Get the currently authenticated user
   const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (sessionError || !session) {
-    console.error("Error fetching session:", sessionError);
-    redirect('/login')
-  }
 
-  const user = session?.user;
-
-  if (!user) {
+  if (userError || !user) {
     redirect('/login')
   }
 

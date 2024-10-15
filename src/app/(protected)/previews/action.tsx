@@ -4,18 +4,11 @@ export async function getPreviews() {
   const supabase = await createClient();
 
   const {
-    data: { session },
+    data: { user },
     error,
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getUser();
 
-  if (error || !session) {
-    console.error("Error fetching session:", error);
-    return { previews: null, error: "No session found" };
-  }
-
-  const user = session?.user;
-
-  if (!user) {
+  if (error || !user) {
     return { previews: null, error: "No user found" };
   }
 
