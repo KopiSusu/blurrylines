@@ -247,7 +247,7 @@ const ProfileDetailForm: React.FC = () => {
                         onClick={() => inputAvatarImageRef.current?.click()}
                         disabled={isSubmitting}
                       >
-                        Upload new image
+                        {isSubmitting ? "Uploading..." : "Upload new image"}
                       </Button>
 
                       <FormDescription>
