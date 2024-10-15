@@ -3,7 +3,6 @@ import { getPromptFromImage } from "@/app/(protected)/preview/actions";
 import { supabaseAdmin } from "@/utils/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 import fetch from "node-fetch";
-import sharp from "sharp"; // Import sharp for image processing
 
 export const maxDuration = 300;
 
