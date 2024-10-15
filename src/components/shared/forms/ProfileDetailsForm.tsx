@@ -82,11 +82,11 @@ const ProfileDetailForm: React.FC = () => {
   useEffect(() => {
     if (profile) {
       form.reset({
-        username: profile.username || "",
-        full_name: profile.full_name || "",
-        avatar_url: profile.avatar_url || "",
-        face_url: profile.face.face_url || "",
-        prompt: profile.face.prompt || "",
+        username: profile?.username || "",
+        full_name: profile?.full_name || "",
+        avatar_url: profile?.avatar_url || "",
+        face_url: profile?.face?.face_url || "",
+        prompt: profile?.face?.prompt || "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

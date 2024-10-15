@@ -29,6 +29,7 @@ import {
   SelectValue,
   SelectGroup,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 // Define your form schema
 const formSchema = z.object({
@@ -90,6 +91,8 @@ export default function PreviewGenForm() {
   };
 
   const isFormLoading = isLoading || isPending || isTaskLoading;
+
+  console.log(profile);
 
   return (
     <Form {...form}>
@@ -190,12 +193,21 @@ export default function PreviewGenForm() {
               </SelectGroup>
             </SelectContent>
           </Select>
+          {(!profile?.face || !profile?.face.face_image_path) && (
+            <Link href="/profile">
+              <Button type="button" className="w-[20vw] mx-auto capitalize">
+                Generate Face
+              </Button>
+            </Link>
+          )}
+          {profile?.face && profile?.face.face_image_path && (
+            <Button type="submit" className="w-[20vw] mx-auto capitalize">
+              {isFormLoading
+                ? "Generating..."
+                : `Generate ${generationType} Preview`}
+            </Button>
+          )}
           {/* Button to submit form */}
-          <Button type="submit" className="w-[20vw] mx-auto capitalize">
-            {isFormLoading
-              ? "Generating..."
-              : `Generate ${generationType} Preview`}
-          </Button>
         </div>
         {error && <p className="text-red-500">Error: {error.message}</p>}
       </form>
